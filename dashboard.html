@@ -72,13 +72,13 @@
             <tbody id="dataTableBody">
                 </tbody>
         </table>
-        
-        </div>
+
+    </div>
 
     <script>
-        // --- GANTI URL INI DENGAN LINK DEPLOYMENT TERBARU ANDA ---
+        // --- GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ---
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec';
-        // --------------------------------------------------------
+        // ---------------------------------------------------------------------
 
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('dataForm');
@@ -117,25 +117,21 @@
                     return;
                 }
                 
-                // Tampilkan info user
                 const user = result.data;
                 const infoText = `${user.role} | Klub: ${user.nama_klub} (${user.id_klub})`;
                 document.getElementById('userInfo').textContent = infoText;
 
-                // Muat Data saat sesi valid
                 loadData(form.dataset.sheetName);
 
             } catch (error) {
                 console.error('Validation Error:', error);
-                alert('Gagal terhubung ke server. Silakan coba lagi.');
-                handleLogout();
+                // Biarkan pesan error koneksi ditangani oleh frontend utama jika gagal fetch
             }
         }
 
         function handleLogout() {
             const token = localStorage.getItem('userToken');
             
-            // Kirim request logout ke backend (opsional, tapi disarankan untuk membersihkan sesi)
             if (token) {
                  fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -152,7 +148,6 @@
         // 2. LOGIKA CRUD
         // =================================================================
         
-        // Memuat dan Menampilkan Data
         async function loadData(sheetName) {
             const token = localStorage.getItem('userToken');
             const tableBody = document.getElementById('dataTableBody'); 
@@ -186,7 +181,6 @@
             }
         }
 
-        // Menggambar Tabel
         function renderTable(dataArray, sheetName) {
             const tableBody = document.getElementById('dataTableBody');
             tableBody.innerHTML = ''; 
@@ -200,13 +194,12 @@
                 const row = tableBody.insertRow();
                 const pk = item[teamPrimaryKey];
 
-                // Data yang akan ditampilkan di tabel (sesuaikan urutan)
                 const displayKeys = [
                     teamPrimaryKey, 
                     'nama_lengkap_team', 
                     'usia_team', 
                     'posisi_team',
-                    'photo_url_team_display', // Menggunakan _display untuk gambar
+                    'photo_url_team_display',
                     'Status_Persetujuan',
                     'timecreated',
                 ];
@@ -214,7 +207,6 @@
                 displayKeys.forEach(key => {
                     const cell = row.insertCell();
                     
-                    // Pengecekan kolom display
                     if (key.endsWith('_display')) {
                         cell.innerHTML = item[key] || 'N/A';
                     } else if (key === 'timecreated') {
@@ -225,16 +217,13 @@
                     }
                 });
 
-                // Kolom Aksi
                 const actionCell = row.insertCell();
                 
-                // Tombol Edit
                 const editBtn = document.createElement('button');
                 editBtn.textContent = 'Edit';
                 editBtn.className = 'btn-edit';
                 editBtn.onclick = () => loadRecordForEdit(pk, sheetName); 
                 
-                // Tombol Hapus
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Hapus';
                 deleteBtn.className = 'btn-delete';
@@ -244,7 +233,6 @@
                     }
                 };
 
-                // Kunci Edit/Hapus
                 if (item.is_locked) {
                     editBtn.disabled = true;
                     editBtn.title = `Terkunci: ${item.lock_reason}`;
@@ -257,8 +245,6 @@
             });
         }
 
-
-        // Memuat Record ke Form Edit (READ_BY_ID)
         async function loadRecordForEdit(recordId, sheetName) {
             const token = localStorage.getItem('userToken');
             const data = {
@@ -281,7 +267,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    fillFormForEdit(result.data, sheetName);
+                    fillFormForEdit(result.data);
                     displayCrudMessage('Data siap diedit.', true);
                 } else {
                     displayCrudMessage('Gagal memuat data untuk edit: ' + result.message, false);
@@ -292,18 +278,14 @@
             }
         }
 
-        // Mengisi Form Edit
-        function fillFormForEdit(data, sheetName) {
-            // 1. Ubah mode form ke UPDATE
+        function fillFormForEdit(data) {
             form.dataset.mode = 'UPDATE';
             form.dataset.recordId = data[teamPrimaryKey];
             submitBtn.textContent = 'Update Data';
             
-            // 2. Isi input
             for (const key in data) {
                 const input = document.getElementById(key);
                 if (input) {
-                    // Non-aktifkan PK saat Update
                     if (key === teamPrimaryKey) {
                         input.disabled = true; 
                     }
@@ -311,11 +293,9 @@
                 }
             }
             
-            // Scroll ke form
             form.scrollIntoView({ behavior: 'smooth' }); 
         }
         
-        // Reset Form
         function resetForm() {
             form.reset();
             form.dataset.mode = 'CREATE';
@@ -324,8 +304,6 @@
             document.getElementById(teamPrimaryKey).disabled = false;
         }
 
-
-        // Handle Delete
         async function handleDelete(recordId, sheetName) {
             const token = localStorage.getItem('userToken');
             const data = {
@@ -359,8 +337,6 @@
             }
         }
 
-
-        // Handle Submit (Create/Update)
         async function handleSubmit(event) {
             event.preventDefault();
             
@@ -372,7 +348,6 @@
             let payload = {};
             const formData = new FormData(form);
             
-            // Kumpulkan payload dari form, abaikan input yang disabled (PK saat UPDATE)
             formData.forEach((value, key) => {
                  const inputElement = document.getElementById(key);
                  if (inputElement && !inputElement.disabled) {
@@ -422,7 +397,7 @@
         // INISIALISASI
         // =================================================================
         form.addEventListener('submit', handleSubmit);
-        validateSession(); // Mulai validasi sesi saat dashboard dimuat
+        validateSession();
     </script>
 </body>
 </html>
