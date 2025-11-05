@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Login ASKAB PSSI MENTAWAI</title>
+    <base target="_top">
+    <title>Login - ASKAB PSSI MENTAWAI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #004d40; margin: 0; }
-        .login-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); width: 100%; max-width: 350px; }
-        h2 { text-align: center; color: #004d40; margin-bottom: 25px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { background-color: #00897b; color: white; padding: 15px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #004d40; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 300px; text-align: center; }
+        h2 { color: #004d40; margin-bottom: 25px; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #00897b; color: white; padding: 10px 15px; margin: 8px 0; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
         button:hover { background-color: #00695c; }
-        #message { margin-top: 15px; text-align: center; color: #d32f2f; font-weight: bold; }
-        .register-link { text-align: center; margin-top: 20px; }
+        #message { color: red; margin-top: 10px; font-weight: bold; }
+        .register-link { margin-top: 20px; font-size: 0.9em; }
         .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
         .register-link a:hover { text-decoration: underline; }
     </style>
@@ -22,10 +22,8 @@
 <div class="login-container">
     <h2>ASKAB PSSI MENTAWAI</h2>
     <form id="loginForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" required>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
     <div id="message"></div>
@@ -36,21 +34,26 @@
 
 <script>
     // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkV_ThvMeELxRBGBV59pqRAAzhnp9QatSxhhbj_0aqBTenUZQzwZfuf2BONJs1kIJD/exec'; 
+    const APPS_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DI_SINI'; 
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+    async function handleLogin(e) {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const messageDiv = document.getElementById('message');
         messageDiv.textContent = 'Memproses...';
-        messageDiv.style.color = '#00897b';
 
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify({ action: 'login', username: username, password: password })
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'login',
+                    username: username,
+                    password: password
+                })
             });
 
             const result = await response.json();
@@ -59,17 +62,25 @@
                 localStorage.setItem('pssi_token', result.data.token);
                 localStorage.setItem('pssi_role', result.data.role);
                 localStorage.setItem('pssi_id_klub', result.data.id_klub);
-                messageDiv.textContent = 'Login Berhasil! Mengalihkan...';
+                // [ATURAN 3] Redirect ke dashboard
                 window.location.href = 'dashboard.html'; 
             } else {
-                messageDiv.textContent = 'Gagal Login: ' + result.message;
-                messageDiv.style.color = '#d32f2f';
+                messageDiv.textContent = result.message;
             }
+
         } catch (error) {
-            messageDiv.textContent = 'Terjadi kesalahan koneksi atau server.';
-            messageDiv.style.color = '#d32f2f';
+            messageDiv.textContent = 'Terjadi kesalahan koneksi server.';
+            console.error(error);
         }
-    });
+    }
+    
+    // Cek jika sudah ada token, langsung redirect ke dashboard
+    if (localStorage.getItem('pssi_token')) {
+         // Gunakan Apps Script URL untuk redirect ke dashboard.html setelah login
+         const dashboardURL = APPS_SCRIPT_URL.replace("/exec", "/usercodeapp/dashboard"); // Pola umum untuk Apps Script, perlu penyesuaian
+         // Karena di-host di GitHub, cukup redirect ke dashboard.html
+         window.location.href = 'dashboard.html';
+    }
 </script>
 
 </body>
