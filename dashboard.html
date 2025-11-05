@@ -64,6 +64,9 @@
             <input type="hidden" id="klub_action" name="crudType" value="CREATE">
             <input type="hidden" id="klub_recordId" name="recordId">
             
+            <label for="klub_id_klub">ID Klub:</label>
+            <input type="text" id="klub_id_klub" name="id_klub" required>
+            
             <label for="klub_nama_klub">Nama Klub:</label>
             <input type="text" id="klub_nama_klub" name="nama_klub" required>
             
@@ -72,7 +75,16 @@
             
             <label for="klub_tgl_berdiri">Tgl Berdiri:</label>
             <input type="date" id="klub_tgl_berdiri" name="tgl_berdiri" required>
+
+            <label for="klub_username">Username:</label>
+            <input type="text" id="klub_username" name="username" required>
             
+            <label for="klub_password">Password:</label>
+            <input type="text" id="klub_password" name="password" required>
+            
+            <label for="klub_nama_admin">Nama Admin:</label>
+            <input type="text" id="klub_nama_admin" name="nama_admin" required>
+
             <input type="hidden" name="role" value="AdminKlub">
             <input type="hidden" name="logo_klub" value="https://i.ibb.co.com/My9C8d4W/logo-default.png">
             
@@ -89,11 +101,20 @@
             <input type="hidden" id="team_action" name="crudType" value="CREATE">
             <input type="hidden" id="team_recordId" name="recordId">
             
-            <label for="team_id_team">ID Team (16 Angka Unik):</label>
+            <label for="team_id_team">ID Team (16 Angka Unik/NIK):</label>
             <input type="text" id="team_id_team" name="id_team" required>
 
             <label for="team_nama_lengkap">Nama Lengkap:</label>
             <input type="text" id="team_nama_lengkap" name="nama_lengkap_team" required>
+            
+            <label for="team_nama_punggung">Nama Punggung (Jika Pemain):</label>
+            <input type="text" id="team_nama_punggung" name="nama_punggung_team">
+
+            <label for="team_tempat_lahir">Tempat Lahir:</label>
+            <input type="text" id="team_tempat_lahir" name="tempat_lahir_team" required>
+
+            <label for="team_tanggal_lahir">Tanggal Lahir:</label>
+            <input type="date" id="team_tanggal_lahir" name="tanggal_lahir_team" required>
 
             <label for="team_jabatan">Jabatan:</label>
             <select id="team_jabatan" name="jabatan_team" required>
@@ -106,8 +127,15 @@
                 <option value="Staff Lainnya">Staff Lainnya</option>
             </select>
             
-            <label for="team_no_punggung">No. Punggung (Maksimal 3 Angka, Kosongkan jika bukan pemain):</label>
+            <label for="team_no_punggung">No. Punggung (Maks. 3 Angka):</label>
             <input type="text" id="team_no_punggung" name="no_punggung" pattern="[0-9]{0,3}" title="Maksimal 3 angka.">
+            
+            <label for="team_grade">Grade Team:</label>
+            <select id="team_grade" name="grade_team" required>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
             
             <label for="team_type">Type Team:</label>
             <select id="team_type" name="type_team" required>
@@ -143,12 +171,18 @@
             <label for="berita_isi">Isi Berita:</label>
             <textarea id="berita_isi" name="isi_berita" rows="8" required></textarea>
             
+            <label for="berita_tanggal">Tanggal Berita (Kunci Utama):</label>
+            <input type="date" id="berita_tanggal" name="tanggal" required>
+            
             <label for="berita_url1">URL Foto 1:</label>
             <input type="text" id="berita_url1" name="url_photo1" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
             
-            <input type="hidden" name="url_photo2" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
-            <input type="hidden" name="url_photo3" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
-            <input type="hidden" name="url_photo4" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
+            <label for="berita_url2">URL Foto 2:</label>
+            <input type="text" id="berita_url2" name="url_photo2" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
+            <label for="berita_url3">URL Foto 3:</label>
+            <input type="text" id="berita_url3" name="url_photo3" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
+            <label for="berita_url4">URL Foto 4:</label>
+            <input type="text" id="berita_url4" name="url_photo4" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
             
             <button type="submit" id="btnSubmitBerita">Simpan</button>
         </form>
@@ -246,23 +280,20 @@
         document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
         element.classList.add('active');
 
-        let sheetName = '';
+        let sheetName = menu; // Menggunakan nama menu sebagai sheetName untuk FE
         let requiredRoles = [];
         let keyColumn = '';
 
         if (menu === 'klub') {
-            sheetName = 'login';
             requiredRoles = ['AdminPusat', 'AdminKlub'];
         } else if (menu === 'team') {
-            sheetName = 'datapemainofficial';
             requiredRoles = ['AdminPusat', 'AdminKlub'];
         } else if (menu === 'berita') {
-            sheetName = 'beritapssimentawai';
             requiredRoles = ['AdminPusat', 'AdminEvent', 'AdminMedia'];
         }
         keyColumn = KEY_COLUMNS[menu];
 
-        let html = `<h2>Data ${menu.toUpperCase()} (Sheet: ${sheetName})</h2>`;
+        let html = `<h2>Data ${menu.toUpperCase()}</h2>`;
 
         if (requiredRoles.includes(role)) {
             html += `<p>Anda memiliki akses sebagai **${role}**.</p>`;
@@ -307,7 +338,6 @@
 
     function renderTable(data, keyColumn, sheetName) {
         const dataGrid = document.getElementById('dataGrid');
-        // Filter header yang tidak perlu ditampilkan (internal backend)
         const headers = Object.keys(data[0]).filter(h => h !== 'is_locked' && h !== 'lock_reason');
         let tableHTML = '<table class="data-table"><thead><tr>';
         
@@ -321,9 +351,10 @@
             
             let actionButtons = '';
             const recordId = row[keyColumn]; 
+            // Stringify row untuk dikirim ke fungsi edit
             const rowJsonString = JSON.stringify(row).replace(/'/g, "&#39;"); 
 
-            if (isLocked) {
+            if (isLocked && localStorage.getItem('pssi_role') !== 'AdminPusat') {
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Edit (Locked)</button>`;
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Hapus (Locked)</button>`;
             } else {
@@ -368,9 +399,12 @@
                 const inputElement = form.querySelector(`[name="${key}"]`);
                 if (inputElement) {
                     let value = dataRow[key];
-                    if (value instanceof Date) {
-                        // Konversi Date object ke format YYYY-MM-DD
-                        value = value.toISOString().substring(0, 10);
+                    // Penanganan untuk Date object (dari Apps Script)
+                    if (key.includes('tgl') || key.includes('tanggal')) {
+                         const dateValue = new Date(value);
+                         if (!isNaN(dateValue.getTime())) {
+                             value = dateValue.toISOString().substring(0, 10);
+                         }
                     }
                     inputElement.value = value;
                 }
@@ -392,7 +426,7 @@
         const payload = {
             action: 'crud',
             token: localStorage.getItem('pssi_token'),
-            sheetName: sheetName,
+            sheetName: sheetName, // Mengirim nama frontend (klub/team/berita)
             crudType: formData.get('crudType'),
             recordId: formData.get('recordId'),
             payload: {}
