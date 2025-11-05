@@ -45,7 +45,7 @@
 
 <div class="main-container">
     <div class="sidebar">
-        <a href="#" id="menu-klub" onclick="loadContent('klub', this)">Data Klub</a>
+        <a href="#" id="menu-dataklub" onclick="loadContent('dataklub', this)">Data Klub</a>
         <a href="#" id="menu-team" onclick="loadContent('team', this)">Data Team</a>
         <a href="#" id="menu-berita" onclick="loadContent('berita', this)">Berita</a>
         <a href="#" onclick="logout()">Logout</a>
@@ -59,39 +59,29 @@
     </div>
 </div>
 
-<div id="modalKlub" class="modal">
+<div id="modalDataklub" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal('modalKlub')">&times;</span>
-        <h3 id="modalKlubTitle">Form Data Klub</h3>
-        <form id="formKlub" class="modal-form">
-            <input type="hidden" id="klub_action" name="crudType" value="CREATE">
-            <input type="hidden" id="klub_recordId" name="recordId">
+        <span class="close" onclick="closeModal('modalDataklub')">&times;</span>
+        <h3 id="modalDataklubTitle">Form Data Klub</h3>
+        <form id="formDataklub" class="modal-form">
+            <input type="hidden" id="dataklub_action" name="crudType" value="CREATE">
+            <input type="hidden" id="dataklub_recordId" name="recordId">
             
-            <label for="klub_id_klub">ID Klub (Unik):</label>
-            <input type="text" id="klub_id_klub" name="id_klub" required>
+            <label for="dataklub_id_klub">ID Klub (Otomatis dari sheet Login):</label>
+            <input type="text" id="dataklub_id_klub" name="id_klub" required readonly>
             
-            <label for="klub_nama_klub">Nama Klub:</label>
-            <input type="text" id="klub_nama_klub" name="nama_klub" required>
+            <label for="dataklub_nama_klub">Nama Klub:</label>
+            <input type="text" id="dataklub_nama_klub" name="nama_klub" required>
             
-            <label for="klub_julukan">Julukan:</label>
-            <input type="text" id="klub_julukan" name="julukan" required>
+            <label for="dataklub_julukan">Julukan:</label>
+            <input type="text" id="dataklub_julukan" name="julukan" required>
             
-            <label for="klub_tgl_berdiri">Tgl Berdiri (YYYY-MM-DD):</label>
-            <input type="date" id="klub_tgl_berdiri" name="tgl_berdiri" required>
-
-            <label for="klub_username">Username:</label>
-            <input type="text" id="klub_username" name="username" required>
+            <label for="dataklub_tgl_berdiri">Tgl Berdiri (YYYY-MM-DD):</label>
+            <input type="date" id="dataklub_tgl_berdiri" name="tgl_berdiri" required>
             
-            <label for="klub_password">Password:</label>
-            <input type="text" id="klub_password" name="password" required>
-            
-            <label for="klub_nama_admin">Nama Admin:</label>
-            <input type="text" id="klub_nama_admin" name="nama_admin" required>
-
-            <input type="hidden" name="role" value="AdminKlub">
             <input type="hidden" name="logo_klub" value="https://i.ibb.co.com/My9C8d4W/logo-default.png">
             
-            <button type="submit" id="btnSubmitKlub">Simpan</button>
+            <button type="submit" id="btnSubmitDataklub">Simpan</button>
         </form>
     </div>
 </div>
@@ -130,14 +120,13 @@
                 <option value="Staff Lainnya">Staff Lainnya</option>
             </select>
             
-            <label for="team_no_punggung">No. Punggung (Maks. 3 Angka):</label>
+            <label for="team_no_punggung">No. Punggung (Maks. 3 Angka. Kosongkan jika bukan Pemain):</label>
             <input type="text" id="team_no_punggung" name="no_punggung" pattern="[0-9]{0,3}" title="Maksimal 3 angka.">
             
             <label for="team_grade">Grade Team:</label>
             <select id="team_grade" name="grade_team" required>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                <option value="Profesional">Profesional</option>
+                <option value="Amatir">Amatir</option>
             </select>
             
             <label for="team_type">Type Team:</label>
@@ -194,18 +183,16 @@
 
 <script>
     // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkV_ThvMeELxRBGBV59pqRAAzhnp9QatSxhhbj_0aqBTenUZQzwZfuf2BONJs1kIJD/exec'; 
+    const APPS_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DI_SINI'; 
 
     let currentUserData = {};
-    let clubExists = false; // [PENINGKATAN 1] Status keberadaan klub
+    let clubExists = false; 
     const KEY_COLUMNS = {
-        'klub': 'id_klub',
+        'dataklub': 'id_klub',
         'team': 'id_team',
         'berita': 'tanggal'
     };
 
-    // FUNGSI SESI & UTILITY
-    
     window.onload = checkSession;
     
     async function checkSession() {
@@ -229,21 +216,27 @@
 
             if (!result.success) {
                 alert('Sesi tidak valid atau telah berakhir. Silakan login kembali.');
-                logout(false); // Jangan coba logout ke backend jika token sudah invalid/habis
+                logout(false);
             } else {
                 currentUserData = result.data; 
                 localStorage.setItem('pssi_role', currentUserData.role);
                 localStorage.setItem('pssi_id_klub', currentUserData.id_klub);
+                localStorage.setItem('pssi_nama_klub', currentUserData.nama_klub);
+
 
                 userInfoDiv.innerHTML = `
                     Selamat Datang, <strong>${currentUserData.username}</strong><br>
                     Role: ${currentUserData.role}<br>
-                    ID Klub: ${currentUserData.id_klub || 'N/A'}`;
+                    ID Klub: ${currentUserData.id_klub || 'N/A'}<br>
+                    Nama Klub: ${currentUserData.nama_klub || 'N/A'}`;
 
-                // [PENINGKATAN 1] Cek keberadaan klub setelah sesi valid
+                // Cek keberadaan klub
                 if (currentUserData.role === 'AdminKlub' && currentUserData.id_klub) {
                     await checkClubExistenceAndSetStatus(currentUserData.id_klub);
                 }
+                
+                // Muat konten default (Data Klub)
+                loadContent('dataklub', document.getElementById('menu-dataklub'));
             }
 
         } catch (error) {
@@ -252,7 +245,6 @@
         }
     }
 
-    // [PENINGKATAN 1] Cek keberadaan klub
     async function checkClubExistenceAndSetStatus(id_klub) {
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
@@ -265,16 +257,13 @@
             if (result.success) {
                 clubExists = result.data.exists;
             } else {
-                console.error("Gagal cek keberadaan klub:", result.message);
-                clubExists = false; // Default aman
+                clubExists = false; 
             }
         } catch (error) {
-            console.error("Error koneksi cek klub:", error);
             clubExists = false;
         }
     }
 
-    // [PENINGKATAN 6] Parameter untuk kontrol hapus sesi
     function logout(sendToServer = true) {
         const token = localStorage.getItem('pssi_token');
         if (token && sendToServer) {
@@ -315,32 +304,35 @@
         let sheetName = menu; 
         let requiredRoles = [];
         let keyColumn = KEY_COLUMNS[menu];
+        let displayMenuName = '';
 
-        if (menu === 'klub') {
+        if (menu === 'dataklub') {
             requiredRoles = ['AdminPusat', 'AdminKlub'];
+            displayMenuName = 'Data Klub';
         } else if (menu === 'team') {
             requiredRoles = ['AdminPusat', 'AdminKlub'];
+            displayMenuName = 'Data Team/Official';
         } else if (menu === 'berita') {
             requiredRoles = ['AdminPusat', 'AdminEvent', 'AdminMedia'];
+            displayMenuName = 'Berita';
         }
 
-        let html = `<h2>Data ${menu.toUpperCase()}</h2>`;
+        let html = `<h2>${displayMenuName}</h2>`;
 
         if (requiredRoles.includes(role)) {
             html += `<p>Anda memiliki akses sebagai **${role}**.</p>`;
             
-            // [PENINGKATAN 1] Kontrol tombol Tambah Klub
-            const isKlubCreationDisabled = (menu === 'klub' && role === 'AdminKlub' && clubExists);
+            // Kontrol tombol Tambah Klub
+            const isKlubCreationDisabled = (menu === 'dataklub' && role === 'AdminKlub' && clubExists);
             html += `<button class="btn-crud btn-create" id="btnTambahData" 
                         onclick="doCrudOperation('${menu}', 'CREATE')" 
                         ${isKlubCreationDisabled ? 'disabled' : ''}>
-                        Tambah ${menu.toUpperCase()}
+                        Tambah ${displayMenuName}
                     </button>`;
             
             if (isKlubCreationDisabled) {
                  html += `<p style="color:red; margin-top:10px;">*AdminKlub hanya dapat membuat 1 data klub.</p>`;
             }
-
 
             html += `<div id="dataGrid">Memuat data...</div>`;
             contentDiv.innerHTML = html;
@@ -409,20 +401,23 @@
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Edit</button>`;
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Hapus</button>`;
             } else {
-                // [PERBAIKAN 2] Otorisasi edit/delete: AdminPusat bisa semua, AdminKlub hanya data sendiri.
+                // Otorisasi edit/delete
                 const canEditDelete = (role === 'AdminPusat' || (role !== 'AdminPusat' && row.id_klub && String(row.id_klub) === String(localStorage.getItem('pssi_id_klub'))));
-
-                if (canEditDelete) {
+                
+                // AdminMedia/Event hanya boleh edit berita
+                const canEditDeleteBerita = (sheetName === 'berita' && ['AdminPusat', 'AdminMedia', 'AdminEvent'].includes(role));
+                
+                if (canEditDelete || canEditDeleteBerita) {
                     actionButtons += `<button class="btn-crud btn-edit" onclick="doCrudOperation('${sheetName}', 'UPDATE', '${recordId}', JSON.parse('${rowJsonString}'))">Edit</button>`;
                     actionButtons += `<button class="btn-crud btn-delete" onclick="doCrudOperation('${sheetName}', 'DELETE', '${recordId}')">Hapus</button>`;
                 } else {
-                    actionButtons += `<button class="btn-crud btn-disabled" title="Data klub lain.">Edit</button>`;
-                    actionButtons += `<button class="btn-crud btn-disabled" title="Data klub lain.">Hapus</button>`;
+                     actionButtons += `<button class="btn-crud btn-disabled" title="Tidak ada izin.">Edit</button>`;
+                    actionButtons += `<button class="btn-crud btn-disabled" title="Tidak ada izin.">Hapus</button>`;
                 }
             }
 
-            // [PENINGKATAN 3] Tombol Persetujuan untuk AdminPusat
-            if (role === 'AdminPusat' && sheetName !== 'berita') {
+            // [ATURAN 5] Tombol Persetujuan untuk AdminPusat (Hanya untuk dataklub dan team)
+            if (role === 'AdminPusat' && (sheetName === 'dataklub' || sheetName === 'team')) {
                 const isApproved = row.Status_Persetujuan === 'Disetujui AdminPusat';
                 actionButtons += '<br>';
                 if (!isApproved) {
@@ -439,12 +434,11 @@
         dataGrid.innerHTML = tableHTML;
     }
 
-    // [PENINGKATAN 3] FUNGSI UPDATE STATUS PERSETUJUAN
-    async function updateStatus(sheetName, recordId, newStatus) {
+    function updateStatus(sheetName, recordId, newStatus) {
         if (!confirm(`Yakin ingin mengubah status data ${sheetName} ID ${recordId} menjadi ${newStatus}?`)) return;
 
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
+            fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
@@ -454,15 +448,17 @@
                     recordId: recordId,
                     newStatus: newStatus
                 })
-            });
-            const result = await response.json();
-
-            if (result.success) {
-                alert(result.message);
-                loadContent(sheetName, document.getElementById('menu-' + sheetName));
-            } else {
-                alert(`Gagal mengubah status: ${result.message}`);
-            }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert(result.message);
+                    loadContent(sheetName, document.getElementById('menu-' + sheetName));
+                } else {
+                    alert(`Gagal mengubah status: ${result.message}`);
+                }
+            })
+            .catch(error => alert('Error koneksi saat mengubah status.'));
         } catch (error) {
             alert('Error koneksi saat mengubah status.');
         }
@@ -481,12 +477,11 @@
         
         document.getElementById('btnSubmit' + sheetName.charAt(0).toUpperCase() + sheetName.slice(1)).style.display = (crudType === 'CREATE' || crudType === 'UPDATE') ? 'block' : 'none';
 
-        // [PENINGKATAN 4] Kunci ID Team/Klub saat UPDATE (kunci primary key)
+        // Kunci Primary Key saat UPDATE
         const primaryKeyInput = form.querySelector(`[name="${KEY_COLUMNS[sheetName]}"]`);
         if (primaryKeyInput) {
              primaryKeyInput.readOnly = (crudType === 'UPDATE');
         }
-
 
         if (crudType === 'DELETE') {
             if (confirm(`Apakah Anda yakin ingin menghapus data ${sheetName} dengan ID: ${recordId}?`)) {
@@ -497,17 +492,21 @@
         
         if (crudType === 'CREATE') {
              form.reset(); 
+             // Isi ID Klub otomatis jika AdminKlub
+             if (sheetName === 'dataklub') {
+                  const idKlubInput = document.getElementById('dataklub_id_klub');
+                  if (idKlubInput) idKlubInput.value = localStorage.getItem('pssi_id_klub') || '';
+             }
         }
 
         if (crudType === 'UPDATE' && dataRow) {
             form.reset();
-            // [PERBAIKAN 5] Mengisi form dengan format tanggal yang benar (YYYY-MM-DD)
+            // Isi form
             for (const key in dataRow) {
                 const inputElement = form.querySelector(`[name="${key}"]`);
                 if (inputElement) {
                     let value = dataRow[key];
                     if (inputElement.type === 'date' && value) {
-                         // Konversi dari Spreadsheet Date Object/String ke format YYYY-MM-DD untuk input type=date
                          const dateValue = new Date(value);
                          if (!isNaN(dateValue.getTime())) {
                              value = dateValue.toISOString().substring(0, 10);
@@ -516,21 +515,38 @@
                     inputElement.value = value;
                 }
             }
+            // Logic khusus No. Punggung readOnly jika bukan Pemain saat Update
+            if (sheetName === 'team') {
+                const noPunggungInput = document.getElementById('team_no_punggung');
+                if (noPunggungInput) {
+                     noPunggungInput.readOnly = (dataRow.jabatan_team !== 'Pemain');
+                }
+            }
         }
 
         openModal(modalId);
     }
     
+    // Listener untuk No. Punggung berdasarkan Jabatan
+    document.getElementById('team_jabatan')?.addEventListener('change', function() {
+        const noPunggungInput = document.getElementById('team_no_punggung');
+        if (this.value !== 'Pemain') {
+            noPunggungInput.value = '';
+            noPunggungInput.readOnly = true;
+        } else {
+            noPunggungInput.readOnly = false;
+        }
+    });
+
     // Listener untuk setiap form submission (CREATE atau UPDATE)
-    document.getElementById('formKlub').addEventListener('submit', (e) => handleFormSubmit(e, 'klub'));
+    document.getElementById('formDataklub').addEventListener('submit', (e) => handleFormSubmit(e, 'dataklub'));
     document.getElementById('formTeam').addEventListener('submit', (e) => handleFormSubmit(e, 'team'));
     document.getElementById('formBerita').addEventListener('submit', (e) => handleFormSubmit(e, 'berita'));
 
     function handleFormSubmit(e, sheetName) {
         e.preventDefault();
         const form = e.target;
-        
-        // Cek validitas form HTML5 (untuk pattern ID team)
+
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
@@ -552,6 +568,14 @@
             }
         }
         
+        // Final validation for non-Permanen type
+        if (sheetName === 'team' && payload.payload.type_team !== 'Permanen') {
+             if (!payload.payload.tanggal_mulai_kontrak || !payload.payload.tanggal_akhir_kontrak) {
+                  alert("Tanggal Mulai dan Akhir kontrak wajib diisi untuk Type non-Permanen.");
+                  return;
+             }
+        }
+
         sendDataToServer(sheetName, payload.crudType, payload.recordId, payload.payload);
         closeModal('modal' + sheetName.charAt(0).toUpperCase() + sheetName.slice(1));
     }
@@ -575,7 +599,7 @@
              if (result.success) {
                  alert(`Sukses: ${result.message}`);
                  // Setelah CREATE klub, perbarui status dan muat ulang konten
-                 if (sheetName === 'klub' && crudType === 'CREATE') {
+                 if (sheetName === 'dataklub' && crudType === 'CREATE') {
                     await checkClubExistenceAndSetStatus(localStorage.getItem('pssi_id_klub'));
                  }
                  loadContent(sheetName, document.getElementById('menu-' + sheetName)); 
