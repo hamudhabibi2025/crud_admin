@@ -6,13 +6,13 @@
     <title>Login Aplikasi PSM Mentawai</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 300px; text-align: center; }
-        .login-container h2 { margin-bottom: 20px; color: #333; }
+        .login-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); width: 320px; text-align: center; }
+        .login-container h2 { margin-bottom: 25px; color: #0056b3; }
         .login-container input[type="text"], 
-        .login-container input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .login-container button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .login-container input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        .login-container button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
         .login-container button:hover { background-color: #0056b3; }
-        #message { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; display: none; }
+        #message { margin-top: 20px; padding: 10px; border-radius: 4px; font-weight: bold; display: none; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
@@ -29,9 +29,9 @@
     </div>
 
     <script>
-        // --- GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ---
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec';
-        // ---------------------------------------------------------------------
+        // *** GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ***
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec'; 
+        // *******************************************************************
 
         const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
@@ -49,7 +49,6 @@
             const password = document.getElementById('password').value;
 
             displayMessage('Logging in...', false);
-            messageDiv.style.display = 'block';
 
             const data = {
                 action: 'login',
@@ -67,8 +66,9 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    displayMessage('Login berhasil! Mengalihkan ke dashboard...', true);
+                    displayMessage('Login berhasil! Mengalihkan...', true);
                     
+                    // Simpan data sesi penting
                     localStorage.setItem('userToken', result.data.token);
                     localStorage.setItem('userRole', result.data.role);
                     localStorage.setItem('id_klub', result.data.id_klub);
@@ -79,17 +79,19 @@
                     }, 1000);
 
                 } else {
-                    displayMessage('Login Gagal: ' + result.message, false);
+                    displayMessage('Login Gagal: ' + (result.message || 'Respons tidak valid.'), false);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                displayMessage('Terjadi kesalahan koneksi jaringan.', false);
+                displayMessage('Terjadi kesalahan koneksi jaringan. Cek URL Apps Script.', false);
             }
         }
 
+        // Cek sesi saat halaman dimuat
         (function checkExistingSession() {
             const token = localStorage.getItem('userToken');
             if (token) {
+                // Langsung ke dashboard jika token ada
                 window.location.href = 'dashboard.html';
             }
         })();
