@@ -29,9 +29,9 @@
     </div>
 
     <script>
-        // --- GANTI URL INI DENGAN LINK DEPLOYMENT TERBARU ANDA ---
+        // --- GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ---
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec';
-        // --------------------------------------------------------
+        // ---------------------------------------------------------------------
 
         const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
@@ -69,13 +69,11 @@
                 if (result.success) {
                     displayMessage('Login berhasil! Mengalihkan ke dashboard...', true);
                     
-                    // Simpan token dan data penting ke Local Storage
                     localStorage.setItem('userToken', result.data.token);
                     localStorage.setItem('userRole', result.data.role);
                     localStorage.setItem('id_klub', result.data.id_klub);
                     localStorage.setItem('nama_klub', result.data.nama_klub);
 
-                    // Redirect ke dashboard
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 1000);
@@ -89,13 +87,9 @@
             }
         }
 
-        // Cek sesi saat halaman dimuat (jika ada token, langsung redirect)
         (function checkExistingSession() {
             const token = localStorage.getItem('userToken');
             if (token) {
-                // Coba validasi sesi secara pasif (Opsional, tapi lebih baik)
-                // Jika validasi sukses, langsung redirect
-                // Kita abaikan validasi pasif di sini untuk kesederhanaan, langsung ke dashboard
                 window.location.href = 'dashboard.html';
             }
         })();
