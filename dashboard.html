@@ -6,25 +6,34 @@
     <title>Dashboard PSM Mentawai</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-        .container { width: 95%; max-width: 1200px; margin: 20px auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        h1, h2 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+        .container { width: 95%; max-width: 1300px; margin: 20px auto; background-color: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+        h1, h2 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 25px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header button { padding: 10px 15px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .header button { padding: 10px 18px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .header button:hover { background-color: #c82333; }
-        #userInfo { font-weight: bold; color: #007bff; }
+        #userInfo { font-size: 1.1em; color: #007bff; }
+        
         /* Formulir */
-        #dataForm { background-color: #e9ecef; padding: 20px; border-radius: 6px; margin-bottom: 30px; }
-        #dataForm input, #dataForm select { padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; display: block; width: 100%; box-sizing: border-box; }
-        #dataForm button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        #dataForm button:hover { background-color: #1e7e34; }
+        #dataForm { background-color: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e9ecef;}
+        #dataForm input, #dataForm select { padding: 10px; margin-bottom: 12px; border: 1px solid #ced4da; border-radius: 4px; display: block; width: 100%; box-sizing: border-box; }
+        #formButtons { display: flex; gap: 10px; margin-top: 15px; }
+        #submitBtn { background-color: #28a745; }
+        #submitBtn:hover { background-color: #1e7e34; }
+        #cancelBtn { background-color: #6c757d; }
+        #cancelBtn:hover { background-color: #5a6268; }
+
         /* Tabel */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
-        th { background-color: #007bff; color: white; }
-        .btn-edit { background-color: #ffc107; color: #333; border: none; padding: 5px 8px; cursor: pointer; border-radius: 3px; margin-right: 5px; }
-        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 5px 8px; cursor: pointer; border-radius: 3px; }
-        .btn-edit:disabled, .btn-delete:disabled { opacity: 0.5; cursor: not-allowed; }
-        #messageCrud { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; display: none; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 800px; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; font-size: 13px; vertical-align: middle; }
+        th { background-color: #007bff; color: white; position: sticky; top: 0; }
+        .btn-action { border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px; font-size: 12px; }
+        .btn-edit { background-color: #ffc107; color: #333; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Message */
+        #messageCrud { margin-top: 20px; padding: 12px; border-radius: 4px; font-weight: bold; display: none; text-align: center; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
@@ -32,58 +41,67 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Dashboard PSM Mentawai</h1>
+            <h1>Dashboard Klub</h1>
             <div id="userInfo"></div>
             <button onclick="handleLogout()">Logout</button>
         </div>
 
         <h2>Input Data Pemain/Official</h2>
         <form id="dataForm" data-mode="CREATE" data-sheet-name="team">
-            <input type="text" id="id_team" name="id_team" placeholder="ID Team (16 Digit Angka)" required>
+            <input type="text" id="id_team" name="id_team" placeholder="ID Team (16 Digit Angka)" pattern="\d{16}" title="Harus 16 digit angka" required>
             <input type="text" id="nama_lengkap_team" name="nama_lengkap_team" placeholder="Nama Lengkap" required>
             <input type="date" id="tanggal_lahir_team" name="tanggal_lahir_team" placeholder="Tanggal Lahir" required>
             <select id="posisi_team" name="posisi_team" required>
-                <option value="">Pilih Posisi</option>
+                <option value="">Pilih Posisi (Pemain/Official)</option>
                 <option value="Pemain">Pemain</option>
                 <option value="Official">Official</option>
             </select>
             <input type="text" id="photo_url_team" name="photo_url_team" placeholder="URL Photo Team" required>
-            <input type="text" id="no_punggung_team" name="no_punggung_team" placeholder="No Punggung (Jika Pemain)">
+            <input type="number" id="no_punggung_team" name="no_punggung_team" placeholder="No Punggung (Jika Pemain)" min="0">
 
-            <button type="submit" id="submitBtn">Tambah Data</button>
-            <button type="button" onclick="resetForm()" id="cancelBtn" style="background-color: #6c757d;">Batal/Reset</button>
+            <div id="formButtons">
+                <button type="submit" id="submitBtn">Tambah Data</button>
+                <button type="button" onclick="resetForm()" id="cancelBtn">Batal/Reset</button>
+            </div>
         </form>
         <div id="messageCrud"></div>
 
         <h2>Data Pemain/Official Klub Anda</h2>
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th>ID Team</th>
-                    <th>Nama Lengkap</th>
-                    <th>Usia</th>
-                    <th>Posisi</th>
-                    <th>Photo Team</th>
-                    <th>Status Persetujuan</th>
-                    <th>Dibuat Pada</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="dataTableBody">
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ID Team</th>
+                        <th>Nama Lengkap</th>
+                        <th>Usia</th>
+                        <th>Posisi</th>
+                        <th>Photo</th>
+                        <th>Status Persetujuan</th>
+                        <th>Dibuat Pada</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <tr><td colspan="8">Harap login untuk melihat data.</td></tr>
                 </tbody>
-        </table>
+            </table>
+        </div>
 
     </div>
 
     <script>
-        // --- GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ---
+        // *** GANTI URL INI DENGAN LINK DEPLOYMENT APPS SCRIPT TERBARU ANDA ***
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec';
-        // ---------------------------------------------------------------------
+        // *******************************************************************
 
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('dataForm');
         const messageCrudDiv = document.getElementById('messageCrud');
-        const teamPrimaryKey = 'id_team'; // Primary key untuk sheet 'team'
+        const teamPrimaryKey = 'id_team'; // Kunci utama untuk data Team
+
+        // =================================================================
+        // UTILITY
+        // =================================================================
 
         function displayCrudMessage(text, isSuccess) {
             messageCrudDiv.textContent = text;
@@ -92,8 +110,24 @@
             setTimeout(() => { messageCrudDiv.style.display = 'none'; }, 5000);
         }
 
+        function handleLogout() {
+            const token = localStorage.getItem('userToken');
+            
+            if (token) {
+                 // Kirim permintaan logout ke backend (opsional, untuk menghapus sesi di sheet)
+                 fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'logout', token: token })
+                 }).catch(e => console.error("Logout request failed:", e));
+            }
+            
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
         // =================================================================
-        // 1. SESI DAN LOGOUT
+        // SESI & VALIDASI
         // =================================================================
 
         async function validateSession() {
@@ -121,31 +155,18 @@
                 const infoText = `${user.role} | Klub: ${user.nama_klub} (${user.id_klub})`;
                 document.getElementById('userInfo').textContent = infoText;
 
-                loadData(form.dataset.sheetName);
+                // Setelah validasi, muat data
+                loadData(form.dataset.sheetName); 
 
             } catch (error) {
                 console.error('Validation Error:', error);
-                // Biarkan pesan error koneksi ditangani oleh frontend utama jika gagal fetch
+                alert('Gagal terhubung ke server. Coba lagi.');
+                // Jika koneksi gagal, jangan log out tapi tampilkan error
             }
-        }
-
-        function handleLogout() {
-            const token = localStorage.getItem('userToken');
-            
-            if (token) {
-                 fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'logout', token: token })
-                 }).catch(e => console.error("Logout request failed:", e));
-            }
-            
-            localStorage.clear();
-            window.location.href = 'index.html';
         }
 
         // =================================================================
-        // 2. LOGIKA CRUD
+        // CRUD IMPLEMENTATION
         // =================================================================
         
         async function loadData(sheetName) {
@@ -192,14 +213,14 @@
 
             dataArray.forEach(item => {
                 const row = tableBody.insertRow();
-                const pk = item[teamPrimaryKey];
+                const pk = item[teamPrimaryKey]; // id_team
 
                 const displayKeys = [
                     teamPrimaryKey, 
                     'nama_lengkap_team', 
                     'usia_team', 
                     'posisi_team',
-                    'photo_url_team_display',
+                    'photo_url_team_display', // Menggunakan kolom HTML yang dibuat di Code.gs
                     'Status_Persetujuan',
                     'timecreated',
                 ];
@@ -211,7 +232,7 @@
                         cell.innerHTML = item[key] || 'N/A';
                     } else if (key === 'timecreated') {
                          const date = new Date(item[key]);
-                         cell.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                         cell.textContent = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
                     } else {
                         cell.textContent = item[key];
                     }
@@ -221,18 +242,19 @@
                 
                 const editBtn = document.createElement('button');
                 editBtn.textContent = 'Edit';
-                editBtn.className = 'btn-edit';
+                editBtn.className = 'btn-action btn-edit';
                 editBtn.onclick = () => loadRecordForEdit(pk, sheetName); 
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Hapus';
-                deleteBtn.className = 'btn-delete';
+                deleteBtn.className = 'btn-action btn-delete';
                 deleteBtn.onclick = () => {
                     if (confirm(`Yakin ingin menghapus data ID: ${pk}?`)) {
                         handleDelete(pk, sheetName);
                     }
                 };
 
+                // Kunci tombol berdasarkan status dari backend
                 if (item.is_locked) {
                     editBtn.disabled = true;
                     editBtn.title = `Terkunci: ${item.lock_reason}`;
@@ -268,7 +290,7 @@
 
                 if (result.success) {
                     fillFormForEdit(result.data);
-                    displayCrudMessage('Data siap diedit.', true);
+                    displayCrudMessage('Data siap diedit. ID Team dikunci.', true);
                 } else {
                     displayCrudMessage('Gagal memuat data untuk edit: ' + result.message, false);
                 }
@@ -287,7 +309,7 @@
                 const input = document.getElementById(key);
                 if (input) {
                     if (key === teamPrimaryKey) {
-                        input.disabled = true; 
+                        input.disabled = true; // Kunci ID saat update
                     }
                     input.value = data[key];
                 }
@@ -350,6 +372,7 @@
             
             formData.forEach((value, key) => {
                  const inputElement = document.getElementById(key);
+                 // Hanya kirim input yang tidak disabled
                  if (inputElement && !inputElement.disabled) {
                      payload[key] = value;
                  }
