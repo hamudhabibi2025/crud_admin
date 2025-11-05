@@ -15,6 +15,8 @@
         .register-link { margin-top: 20px; font-size: 0.9em; }
         .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
         .register-link a:hover { text-decoration: underline; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #00897b; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; display: none; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -24,7 +26,8 @@
     <form id="loginForm">
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
+        <button type="submit" id="loginButton">Login</button>
+        <div id="spinner" class="spinner"></div>
     </form>
     <div id="message"></div>
     <div class="register-link">
@@ -36,14 +39,26 @@
     // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec'; 
 
+    window.onload = function() {
+        // Cek jika sudah ada token, langsung redirect ke dashboard
+        if (localStorage.getItem('pssi_token')) {
+            window.location.href = 'dashboard.html';
+        }
+    };
+
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
     async function handleLogin(e) {
         e.preventDefault();
-        const username = document.getElementById('username').value;
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         const messageDiv = document.getElementById('message');
-        messageDiv.textContent = 'Memproses...';
+        const loginButton = document.getElementById('loginButton');
+        const spinner = document.getElementById('spinner');
+
+        messageDiv.textContent = '';
+        loginButton.disabled = true;
+        spinner.style.display = 'block';
 
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
@@ -59,27 +74,25 @@
             const result = await response.json();
 
             if (result.success) {
+                // Simpan data otentikasi
                 localStorage.setItem('pssi_token', result.data.token);
                 localStorage.setItem('pssi_role', result.data.role);
                 localStorage.setItem('pssi_id_klub', result.data.id_klub);
-                // [ATURAN 3] Redirect ke dashboard
+                localStorage.setItem('pssi_username', result.data.username); 
+
+                // Redirect ke dashboard
                 window.location.href = 'dashboard.html'; 
             } else {
-                messageDiv.textContent = result.message;
+                messageDiv.textContent = result.message || 'Login gagal. Cek username dan password Anda.';
             }
 
         } catch (error) {
             messageDiv.textContent = 'Terjadi kesalahan koneksi server.';
-            console.error(error);
+            console.error('Login Error:', error);
+        } finally {
+            loginButton.disabled = false;
+            spinner.style.display = 'none';
         }
-    }
-    
-    // Cek jika sudah ada token, langsung redirect ke dashboard
-    if (localStorage.getItem('pssi_token')) {
-         // Gunakan Apps Script URL untuk redirect ke dashboard.html setelah login
-         const dashboardURL = APPS_SCRIPT_URL.replace("/exec", "/usercodeapp/dashboard"); // Pola umum untuk Apps Script, perlu penyesuaian
-         // Karena di-host di GitHub, cukup redirect ke dashboard.html
-         window.location.href = 'dashboard.html';
     }
 </script>
 
