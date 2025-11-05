@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login ASKAB PSSI MENTAWAI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Gaya CSS dari respons sebelumnya */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #004d40; margin: 0; }
+        .login-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); width: 100%; max-width: 350px; }
+        h2 { text-align: center; color: #004d40; margin-bottom: 25px; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background-color: #00897b; color: white; padding: 15px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #00695c; }
+        #message { margin-top: 15px; text-align: center; color: #d32f2f; font-weight: bold; }
+        .register-link { text-align: center; margin-top: 20px; }
+        .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
+        .register-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>ASKAB PSSI MENTAWAI</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button type="submit">Login</button>
+    </form>
+    <div id="message"></div>
+    <div class="register-link">
+        <a href="https://hamudhabibi2025.github.io/pendaftaran/" target="_blank">Buat Akun Klub</a>
+    </div>
+</div>
+
+<script>
+    // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
+    const APPS_SCRIPT_URL = 'GANTI_DENGAN_URL_DEPLOYMENT_APPS_SCRIPT_ANDA'; 
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = 'Memproses...';
+        messageDiv.style.color = '#00897b';
+
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify({ action: 'login', username: username, password: password })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                localStorage.setItem('pssi_token', result.data.token);
+                localStorage.setItem('pssi_role', result.data.role);
+                localStorage.setItem('pssi_id_klub', result.data.id_klub);
+                messageDiv.textContent = 'Login Berhasil! Mengalihkan...';
+                window.location.href = 'dashboard.html'; 
+            } else {
+                messageDiv.textContent = 'Gagal Login: ' + result.message;
+                messageDiv.style.color = '#d32f2f';
+            }
+        } catch (error) {
+            messageDiv.textContent = 'Terjadi kesalahan koneksi atau server.';
+            messageDiv.style.color = '#d32f2f';
+        }
+    });
+</script>
+
+</body>
+</html>
