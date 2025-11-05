@@ -1,87 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <base target="_top">
-    <title>Login - ASKAB PSSI MENTAWAI</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Aplikasi PSM Mentawai</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #004d40; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 300px; text-align: center; }
-        h2 { color: #004d40; margin-bottom: 25px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #00897b; color: white; padding: 10px 15px; margin: 8px 0; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #00695c; }
-        #message { color: red; margin-top: 10px; font-weight: bold; }
-        .register-link { margin-top: 20px; font-size: 0.9em; }
-        .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
-        .register-link a:hover { text-decoration: underline; }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 300px; text-align: center; }
+        .login-container h2 { margin-bottom: 20px; color: #333; }
+        .login-container input[type="text"], 
+        .login-container input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .login-container button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .login-container button:hover { background-color: #0056b3; }
+        #message { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; display: none; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
-
-<div class="login-container">
-    <h2>ASKAB PSSI MENTAWAI</h2>
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <div id="message"></div>
-    <div class="register-link">
-        <a href="https://hamudhabibi2025.github.io/pendaftaran/" target="_blank">Buat Akun Klub</a>
+    <div class="login-container">
+        <h2>Login PSM Mentawai</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="message"></div>
     </div>
-</div>
 
-<script>
-    // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi7gNeofGUop6cIuQshoVmies0Ud8ErTXJ_Ge7zEm1kvE32_zkwlQ_Km02V5WDGJR5/exec'; 
+    <script>
+        // --- GANTI URL INI DENGAN LINK DEPLOYMENT TERBARU ANDA ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec';
+        // --------------------------------------------------------
 
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-
-    async function handleLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
-        messageDiv.textContent = 'Memproses...';
 
-        try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action: 'login',
-                    username: username,
-                    password: password
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                localStorage.setItem('pssi_token', result.data.token);
-                localStorage.setItem('pssi_role', result.data.role);
-                localStorage.setItem('pssi_id_klub', result.data.id_klub);
-                // [ATURAN 3] Redirect ke dashboard
-                window.location.href = 'dashboard.html'; 
-            } else {
-                messageDiv.textContent = result.message;
-            }
-
-        } catch (error) {
-            messageDiv.textContent = 'Terjadi kesalahan koneksi server.';
-            console.error(error);
+        function displayMessage(text, isSuccess) {
+            messageDiv.textContent = text;
+            messageDiv.className = isSuccess ? 'success' : 'error';
+            messageDiv.style.display = 'block';
         }
-    }
-    
-    // Cek jika sudah ada token, langsung redirect ke dashboard
-    if (localStorage.getItem('pssi_token')) {
-         // Gunakan Apps Script URL untuk redirect ke dashboard.html setelah login
-         const dashboardURL = APPS_SCRIPT_URL.replace("/exec", "/usercodeapp/dashboard"); // Pola umum untuk Apps Script, perlu penyesuaian
-         // Karena di-host di GitHub, cukup redirect ke dashboard.html
-         window.location.href = 'dashboard.html';
-    }
-</script>
 
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            displayMessage('Logging in...', false);
+            messageDiv.style.display = 'block';
+
+            const data = {
+                action: 'login',
+                username: username,
+                password: password
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayMessage('Login berhasil! Mengalihkan ke dashboard...', true);
+                    
+                    // Simpan token dan data penting ke Local Storage
+                    localStorage.setItem('userToken', result.data.token);
+                    localStorage.setItem('userRole', result.data.role);
+                    localStorage.setItem('id_klub', result.data.id_klub);
+                    localStorage.setItem('nama_klub', result.data.nama_klub);
+
+                    // Redirect ke dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+
+                } else {
+                    displayMessage('Login Gagal: ' + result.message, false);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                displayMessage('Terjadi kesalahan koneksi jaringan.', false);
+            }
+        }
+
+        // Cek sesi saat halaman dimuat (jika ada token, langsung redirect)
+        (function checkExistingSession() {
+            const token = localStorage.getItem('userToken');
+            if (token) {
+                // Coba validasi sesi secara pasif (Opsional, tapi lebih baik)
+                // Jika validasi sukses, langsung redirect
+                // Kita abaikan validasi pasif di sini untuk kesederhanaan, langsung ke dashboard
+                window.location.href = 'dashboard.html';
+            }
+        })();
+
+        loginForm.addEventListener('submit', handleLogin);
+    </script>
 </body>
 </html>
