@@ -348,7 +348,7 @@
     async function fetchAndRenderData(sheetName, keyColumn) {
         const token = localStorage.getItem('pssi_token');
         const dataGrid = document.getElementById('dataGrid');
-        dataGrid.innerHTML = 'Memuat data...';
+        dataGrid.innerHTML = 'Tunggu Sebentar, Sedang Memuat data...';
         
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
@@ -365,7 +365,7 @@
             }
 
         } catch (error) {
-            dataGrid.innerHTML = `<p style="color:red;">Anda Belum memiliki Klub, silahkan Buat Klubmu Sekarang.</p>`;
+            dataGrid.innerHTML = `<p style="color:red;">Anda Belum memiliki data, silahkan datamu Sekarang.</p>`;
             console.error(error);
         }
     }
