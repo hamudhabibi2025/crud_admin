@@ -1,99 +1,88 @@
+index.html
+
 <!DOCTYPE html>
 <html>
 <head>
-    <base target="_top">
-    <title>Login - ASKAB PSSI MENTAWAI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #004d40; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 300px; text-align: center; }
-        h2 { color: #004d40; margin-bottom: 25px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #00897b; color: white; padding: 10px 15px; margin: 8px 0; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #00695c; }
-        #message { color: red; margin-top: 10px; font-weight: bold; }
-        .register-link { margin-top: 20px; font-size: 0.9em; }
-        .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
-        .register-link a:hover { text-decoration: underline; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #00897b; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; display: none; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <base target="_top">
+    <title>Login - ASKAB PSSI MENTAWAI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #004d40; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 300px; text-align: center; }
+        h2 { color: #004d40; margin-bottom: 25px; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #00897b; color: white; padding: 10px 15px; margin: 8px 0; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #00695c; }
+        #message { color: red; margin-top: 10px; font-weight: bold; }
+        .register-link { margin-top: 20px; font-size: 0.9em; }
+        .register-link a { color: #00897b; text-decoration: none; font-weight: bold; }
+        .register-link a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
 
 <div class="login-container">
-    <h2>ASKAB PSSI MENTAWAI</h2>
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit" id="loginButton">Login</button>
-        <div id="spinner" class="spinner"></div>
-    </form>
-    <div id="message"></div>
-    <div class="register-link">
-        <a href="https://hamudhabibi2025.github.io/pendaftaran/" target="_blank">Buat Akun Klub</a>
-    </div>
+    <h2>ASKAB PSSI MENTAWAI</h2>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <div id="message"></div>
+    <div class="register-link">
+        <a href="https://hamudhabibi2025.github.io/pendaftaran/" target="_blank">Buat Akun Klub</a>
+    </div>
 </div>
 
 <script>
-    // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec'; 
+    // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyopTiBS76aCj-o_tJhDZ6M4-4y9bGPnpdxVMnOAo6BP21271kGgbMiHUZGhWZtliR3/exec'; 
 
-    window.onload = function() {
-        // Cek jika sudah ada token, langsung redirect ke dashboard
-        if (localStorage.getItem('pssi_token')) {
-            window.location.href = 'dashboard.html';
-        }
-    };
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = 'Memproses...';
 
-    async function handleLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        const messageDiv = document.getElementById('message');
-        const loginButton = document.getElementById('loginButton');
-        const spinner = document.getElementById('spinner');
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'login',
+                    username: username,
+                    password: password
+                })
+            });
 
-        messageDiv.textContent = '';
-        loginButton.disabled = true;
-        spinner.style.display = 'block';
+            const result = await response.json();
 
-        try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action: 'login',
-                    username: username,
-                    password: password
-                })
-            });
+            if (result.success) {
+                localStorage.setItem('pssi_token', result.data.token);
+                localStorage.setItem('pssi_role', result.data.role);
+                localStorage.setItem('pssi_id_klub', result.data.id_klub);
+                // [ATURAN 3] Redirect ke dashboard
+                window.location.href = 'dashboard.html'; 
+            } else {
+                messageDiv.textContent = result.message;
+            }
 
-            const result = await response.json();
-
-            if (result.success) {
-                // Simpan data otentikasi
-                localStorage.setItem('pssi_token', result.data.token);
-                localStorage.setItem('pssi_role', result.data.role);
-                localStorage.setItem('pssi_id_klub', result.data.id_klub);
-                localStorage.setItem('pssi_username', result.data.username); 
-
-                // Redirect ke dashboard
-                window.location.href = 'dashboard.html'; 
-            } else {
-                messageDiv.textContent = result.message || 'Login gagal. Cek username dan password Anda.';
-            }
-
-        } catch (error) {
-            messageDiv.textContent = 'Terjadi kesalahan koneksi server.';
-            console.error('Login Error:', error);
-        } finally {
-            loginButton.disabled = false;
-            spinner.style.display = 'none';
-        }
-    }
+        } catch (error) {
+            messageDiv.textContent = 'Terjadi kesalahan koneksi server.';
+            console.error(error);
+        }
+    }
+    
+    // Cek jika sudah ada token, langsung redirect ke dashboard
+    if (localStorage.getItem('pssi_token')) {
+         // Gunakan Apps Script URL untuk redirect ke dashboard.html setelah login
+         const dashboardURL = APPS_SCRIPT_URL.replace("/exec", "/usercodeapp/dashboard"); // Pola umum untuk Apps Script, perlu penyesuaian
+         // Karena di-host di GitHub, cukup redirect ke dashboard.html
+         window.location.href = 'dashboard.html';
+    }
 </script>
 
 </body>
