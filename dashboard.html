@@ -20,8 +20,11 @@
         .data-table th { background-color: #00897b; color: white; }
         .btn-crud { padding: 5px 10px; margin: 2px; border: none; cursor: pointer; border-radius: 3px; }
         .btn-create { background-color: #28a745; color: white; }
+        .btn-create:disabled { background-color: #adb5bd; cursor: not-allowed; }
         .btn-edit { background-color: #ffc107; }
         .btn-delete { background-color: #dc3545; color: white; }
+        .btn-approve { background-color: #007bff; color: white; }
+        .btn-reject { background-color: #6c757d; color: white; }
         .btn-disabled { background-color: #adb5bd; cursor: not-allowed; }
 
         /* Gaya Modal */
@@ -64,7 +67,7 @@
             <input type="hidden" id="klub_action" name="crudType" value="CREATE">
             <input type="hidden" id="klub_recordId" name="recordId">
             
-            <label for="klub_id_klub">ID Klub:</label>
+            <label for="klub_id_klub">ID Klub (Unik):</label>
             <input type="text" id="klub_id_klub" name="id_klub" required>
             
             <label for="klub_nama_klub">Nama Klub:</label>
@@ -73,7 +76,7 @@
             <label for="klub_julukan">Julukan:</label>
             <input type="text" id="klub_julukan" name="julukan" required>
             
-            <label for="klub_tgl_berdiri">Tgl Berdiri:</label>
+            <label for="klub_tgl_berdiri">Tgl Berdiri (YYYY-MM-DD):</label>
             <input type="date" id="klub_tgl_berdiri" name="tgl_berdiri" required>
 
             <label for="klub_username">Username:</label>
@@ -102,7 +105,7 @@
             <input type="hidden" id="team_recordId" name="recordId">
             
             <label for="team_id_team">ID Team (16 Angka Unik/NIK):</label>
-            <input type="text" id="team_id_team" name="id_team" required>
+            <input type="text" id="team_id_team" name="id_team" required pattern="\d{16}" title="Harus 16 digit angka.">
 
             <label for="team_nama_lengkap">Nama Lengkap:</label>
             <input type="text" id="team_nama_lengkap" name="nama_lengkap_team" required>
@@ -113,7 +116,7 @@
             <label for="team_tempat_lahir">Tempat Lahir:</label>
             <input type="text" id="team_tempat_lahir" name="tempat_lahir_team" required>
 
-            <label for="team_tanggal_lahir">Tanggal Lahir:</label>
+            <label for="team_tanggal_lahir">Tanggal Lahir (YYYY-MM-DD):</label>
             <input type="date" id="team_tanggal_lahir" name="tanggal_lahir_team" required>
 
             <label for="team_jabatan">Jabatan:</label>
@@ -144,10 +147,10 @@
                 <option value="Pinjaman diluar Asosiasi Kabupaten Mentawai">Pinjaman diluar Asosiasi Kabupaten Mentawai</option>
             </select>
 
-            <label for="team_tgl_mulai">Tanggal Mulai Kontrak:</label>
+            <label for="team_tgl_mulai">Tanggal Mulai Kontrak (YYYY-MM-DD):</label>
             <input type="date" id="team_tgl_mulai" name="tanggal_mulai_kontrak">
 
-            <label for="team_tgl_akhir">Tanggal Akhir Kontrak:</label>
+            <label for="team_tgl_akhir">Tanggal Akhir Kontrak (YYYY-MM-DD):</label>
             <input type="date" id="team_tgl_akhir" name="tanggal_akhir_kontrak">
             
             <input type="hidden" name="photo_team_url" value="https://i.ibb.co.com/Q7FXPsXL/default-pas-photo-1.jpg">
@@ -171,7 +174,7 @@
             <label for="berita_isi">Isi Berita:</label>
             <textarea id="berita_isi" name="isi_berita" rows="8" required></textarea>
             
-            <label for="berita_tanggal">Tanggal Berita (Kunci Utama):</label>
+            <label for="berita_tanggal">Tanggal Berita (YYYY-MM-DD):</label>
             <input type="date" id="berita_tanggal" name="tanggal" required>
             
             <label for="berita_url1">URL Foto 1:</label>
@@ -194,6 +197,7 @@
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkV_ThvMeELxRBGBV59pqRAAzhnp9QatSxhhbj_0aqBTenUZQzwZfuf2BONJs1kIJD/exec'; 
 
     let currentUserData = {};
+    let clubExists = false; // [PENINGKATAN 1] Status keberadaan klub
     const KEY_COLUMNS = {
         'klub': 'id_klub',
         'team': 'id_team',
@@ -235,11 +239,38 @@
                     Selamat Datang, <strong>${currentUserData.username}</strong><br>
                     Role: ${currentUserData.role}<br>
                     ID Klub: ${currentUserData.id_klub || 'N/A'}`;
+
+                // [PENINGKATAN 1] Cek keberadaan klub setelah sesi valid
+                if (currentUserData.role === 'AdminKlub' && currentUserData.id_klub) {
+                    await checkClubExistenceAndSetStatus(currentUserData.id_klub);
+                }
             }
 
         } catch (error) {
             alert('Kesalahan koneksi saat validasi sesi.');
             logout();
+        }
+    }
+
+    // [PENINGKATAN 1] Cek keberadaan klub
+    async function checkClubExistenceAndSetStatus(id_klub) {
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'checkClub', id_klub: id_klub })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                clubExists = result.data.exists;
+            } else {
+                console.error("Gagal cek keberadaan klub:", result.message);
+                clubExists = false; // Default aman
+            }
+        } catch (error) {
+            console.error("Error koneksi cek klub:", error);
+            clubExists = false;
         }
     }
 
@@ -280,9 +311,9 @@
         document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
         element.classList.add('active');
 
-        let sheetName = menu; // Menggunakan nama menu sebagai sheetName untuk FE
+        let sheetName = menu; 
         let requiredRoles = [];
-        let keyColumn = '';
+        let keyColumn = KEY_COLUMNS[menu];
 
         if (menu === 'klub') {
             requiredRoles = ['AdminPusat', 'AdminKlub'];
@@ -291,13 +322,25 @@
         } else if (menu === 'berita') {
             requiredRoles = ['AdminPusat', 'AdminEvent', 'AdminMedia'];
         }
-        keyColumn = KEY_COLUMNS[menu];
 
         let html = `<h2>Data ${menu.toUpperCase()}</h2>`;
 
         if (requiredRoles.includes(role)) {
             html += `<p>Anda memiliki akses sebagai **${role}**.</p>`;
-            html += `<button class="btn-crud btn-create" onclick="doCrudOperation('${menu}', 'CREATE')">Tambah ${menu.toUpperCase()}</button>`;
+            
+            // [PENINGKATAN 1] Kontrol tombol Tambah Klub
+            const isKlubCreationDisabled = (menu === 'klub' && role === 'AdminKlub' && clubExists);
+            html += `<button class="btn-crud btn-create" id="btnTambahData" 
+                        onclick="doCrudOperation('${menu}', 'CREATE')" 
+                        ${isKlubCreationDisabled ? 'disabled' : ''}>
+                        Tambah ${menu.toUpperCase()}
+                    </button>`;
+            
+            if (isKlubCreationDisabled) {
+                 html += `<p style="color:red; margin-top:10px;">*AdminKlub hanya dapat membuat 1 data klub.</p>`;
+            }
+
+
             html += `<div id="dataGrid">Memuat data...</div>`;
             contentDiv.innerHTML = html;
             
@@ -322,10 +365,8 @@
             });
             const result = await response.json();
 
-            if (result.success && result.data && result.data.length > 0) {
+            if (result.success && result.data) {
                 renderTable(result.data, keyColumn, sheetName);
-            } else if (result.success && result.data && result.data.length === 0) {
-                 dataGrid.innerHTML = `<p style="color:orange;">Data berhasil dimuat, tetapi tidak ada ${sheetName} yang ditemukan untuk akun Anda.</p>`;
             } else {
                 dataGrid.innerHTML = `<p style="color:red;">Gagal memuat data. Pesan Server: ${result.message}</p>`;
             }
@@ -338,7 +379,15 @@
 
     function renderTable(data, keyColumn, sheetName) {
         const dataGrid = document.getElementById('dataGrid');
-        const headers = Object.keys(data[0]).filter(h => h !== 'is_locked' && h !== 'lock_reason');
+        // Filter header yang tidak perlu ditampilkan di tabel
+        const headers = Object.keys(data[0]).filter(h => 
+            h !== 'is_locked' && 
+            h !== 'lock_reason' && 
+            h !== 'password' && // Jangan tampilkan password
+            h !== 'photo_team_url' &&
+            h !== 'logo_klub'
+        );
+        
         let tableHTML = '<table class="data-table"><thead><tr>';
         
         headers.forEach(h => tableHTML += `<th>${h.toUpperCase().replace(/_/g, ' ')}</th>`);
@@ -346,20 +395,40 @@
 
         data.forEach(row => {
             const isLocked = row.is_locked;
+            const role = localStorage.getItem('pssi_role');
             tableHTML += '<tr>';
             headers.forEach(h => tableHTML += `<td>${row[h]}</td>`);
             
             let actionButtons = '';
             const recordId = row[keyColumn]; 
-            // Stringify row untuk dikirim ke fungsi edit
             const rowJsonString = JSON.stringify(row).replace(/'/g, "&#39;"); 
 
-            if (isLocked && localStorage.getItem('pssi_role') !== 'AdminPusat') {
-                actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Edit (Locked)</button>`;
-                actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Hapus (Locked)</button>`;
+            // Tombol EDIT & HAPUS
+            if (isLocked && role !== 'AdminPusat') {
+                actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Edit</button>`;
+                actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Hapus</button>`;
             } else {
-                actionButtons += `<button class="btn-crud btn-edit" onclick="doCrudOperation('${sheetName}', 'UPDATE', '${recordId}', JSON.parse('${rowJsonString}'))">Edit</button>`;
-                actionButtons += `<button class="btn-crud btn-delete" onclick="doCrudOperation('${sheetName}', 'DELETE', '${recordId}')">Hapus</button>`;
+                // [PERBAIKAN 2] AdminKlub hanya bisa edit/delete data sendiri
+                const canEditDelete = (role === 'AdminPusat' || (role !== 'AdminPusat' && row.id_klub && String(row.id_klub) === String(localStorage.getItem('pssi_id_klub'))));
+
+                if (canEditDelete) {
+                    actionButtons += `<button class="btn-crud btn-edit" onclick="doCrudOperation('${sheetName}', 'UPDATE', '${recordId}', JSON.parse('${rowJsonString}'))">Edit</button>`;
+                    actionButtons += `<button class="btn-crud btn-delete" onclick="doCrudOperation('${sheetName}', 'DELETE', '${recordId}')">Hapus</button>`;
+                } else {
+                    actionButtons += `<button class="btn-crud btn-disabled" title="Data klub lain.">Edit</button>`;
+                    actionButtons += `<button class="btn-crud btn-disabled" title="Data klub lain.">Hapus</button>`;
+                }
+            }
+
+            // [PENINGKATAN 3] Tombol Persetujuan untuk AdminPusat
+            if (role === 'AdminPusat' && sheetName !== 'berita') {
+                const isApproved = row.Status_Persetujuan === 'Disetujui AdminPusat';
+                actionButtons += '<br>';
+                if (!isApproved) {
+                    actionButtons += `<button class="btn-crud btn-approve" onclick="updateStatus('${sheetName}', '${recordId}', 'Disetujui AdminPusat')">Setujui</button>`;
+                } else {
+                    actionButtons += `<button class="btn-crud btn-reject" onclick="updateStatus('${sheetName}', '${recordId}', 'Dibatalkan AdminPusat')">Batalkan</button>`;
+                }
             }
 
             tableHTML += `<td>${actionButtons}</td></tr>`;
@@ -368,6 +437,36 @@
         tableHTML += '</tbody></table>';
         dataGrid.innerHTML = tableHTML;
     }
+
+    // [PENINGKATAN 3] FUNGSI UPDATE STATUS PERSETUJUAN
+    async function updateStatus(sheetName, recordId, newStatus) {
+        if (!confirm(`Yakin ingin mengubah status data ${sheetName} ID ${recordId} menjadi ${newStatus}?`)) return;
+
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'updateStatus',
+                    token: localStorage.getItem('pssi_token'),
+                    sheetName: sheetName,
+                    recordId: recordId,
+                    newStatus: newStatus
+                })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                loadContent(sheetName, document.getElementById('menu-' + sheetName));
+            } else {
+                alert(`Gagal mengubah status: ${result.message}`);
+            }
+        } catch (error) {
+            alert('Error koneksi saat mengubah status.');
+        }
+    }
+
 
     // FUNGSI CRUD & SUBMISSION
     function doCrudOperation(sheetName, crudType, recordId = null, dataRow = null) {
@@ -380,6 +479,16 @@
         document.getElementById(sheetName + '_recordId').value = recordId || '';
         
         document.getElementById('btnSubmit' + sheetName.charAt(0).toUpperCase() + sheetName.slice(1)).style.display = (crudType === 'CREATE' || crudType === 'UPDATE') ? 'block' : 'none';
+
+        // [PENINGKATAN 4] Kunci ID Team/Klub saat UPDATE
+        if (sheetName === 'team') {
+             document.getElementById('team_id_team').readOnly = (crudType === 'UPDATE');
+        } else if (sheetName === 'klub') {
+             document.getElementById('klub_id_klub').readOnly = (crudType === 'UPDATE');
+        } else if (sheetName === 'berita') {
+             document.getElementById('berita_tanggal').readOnly = (crudType === 'UPDATE');
+        }
+
 
         if (crudType === 'DELETE') {
             if (confirm(`Apakah Anda yakin ingin menghapus data ${sheetName} dengan ID: ${recordId}?`)) {
@@ -394,13 +503,12 @@
 
         if (crudType === 'UPDATE' && dataRow) {
             form.reset();
-            // Isi form dengan data yang akan di-edit
+            // [PERBAIKAN 5] Mengisi form dengan format tanggal yang benar
             for (const key in dataRow) {
                 const inputElement = form.querySelector(`[name="${key}"]`);
                 if (inputElement) {
                     let value = dataRow[key];
-                    // Penanganan untuk Date object (dari Apps Script)
-                    if (key.includes('tgl') || key.includes('tanggal')) {
+                    if (inputElement.type === 'date') {
                          const dateValue = new Date(value);
                          if (!isNaN(dateValue.getTime())) {
                              value = dateValue.toISOString().substring(0, 10);
@@ -422,11 +530,18 @@
     function handleFormSubmit(e, sheetName) {
         e.preventDefault();
         const form = e.target;
+        
+        // Cek validitas form HTML5 (untuk pattern ID team)
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         const formData = new FormData(form);
         const payload = {
             action: 'crud',
             token: localStorage.getItem('pssi_token'),
-            sheetName: sheetName, // Mengirim nama frontend (klub/team/berita)
+            sheetName: sheetName,
             crudType: formData.get('crudType'),
             recordId: formData.get('recordId'),
             payload: {}
@@ -460,6 +575,10 @@
 
              if (result.success) {
                  alert(`Sukses: ${result.message}`);
+                 // Setelah CREATE klub, perbarui status dan muat ulang konten
+                 if (sheetName === 'klub' && crudType === 'CREATE') {
+                    await checkClubExistenceAndSetStatus(localStorage.getItem('pssi_id_klub'));
+                 }
                  loadContent(sheetName, document.getElementById('menu-' + sheetName)); 
              } else {
                  alert(`Gagal: ${result.message}`);
