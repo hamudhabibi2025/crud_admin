@@ -229,7 +229,7 @@
 
             if (!result.success) {
                 alert('Sesi tidak valid atau telah berakhir. Silakan login kembali.');
-                logout();
+                logout(false); // Jangan coba logout ke backend jika token sudah invalid/habis
             } else {
                 currentUserData = result.data; 
                 localStorage.setItem('pssi_role', currentUserData.role);
@@ -248,7 +248,7 @@
 
         } catch (error) {
             alert('Kesalahan koneksi saat validasi sesi.');
-            logout();
+            logout(false);
         }
     }
 
@@ -274,9 +274,10 @@
         }
     }
 
-    function logout() {
+    // [PENINGKATAN 6] Parameter untuk kontrol hapus sesi
+    function logout(sendToServer = true) {
         const token = localStorage.getItem('pssi_token');
-        if (token) {
+        if (token && sendToServer) {
              fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -383,7 +384,7 @@
         const headers = Object.keys(data[0]).filter(h => 
             h !== 'is_locked' && 
             h !== 'lock_reason' && 
-            h !== 'password' && // Jangan tampilkan password
+            h !== 'password' && 
             h !== 'photo_team_url' &&
             h !== 'logo_klub'
         );
@@ -408,7 +409,7 @@
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Edit</button>`;
                 actionButtons += `<button class="btn-crud btn-disabled" title="Terkunci: ${row.lock_reason}">Hapus</button>`;
             } else {
-                // [PERBAIKAN 2] AdminKlub hanya bisa edit/delete data sendiri
+                // [PERBAIKAN 2] Otorisasi edit/delete: AdminPusat bisa semua, AdminKlub hanya data sendiri.
                 const canEditDelete = (role === 'AdminPusat' || (role !== 'AdminPusat' && row.id_klub && String(row.id_klub) === String(localStorage.getItem('pssi_id_klub'))));
 
                 if (canEditDelete) {
@@ -480,13 +481,10 @@
         
         document.getElementById('btnSubmit' + sheetName.charAt(0).toUpperCase() + sheetName.slice(1)).style.display = (crudType === 'CREATE' || crudType === 'UPDATE') ? 'block' : 'none';
 
-        // [PENINGKATAN 4] Kunci ID Team/Klub saat UPDATE
-        if (sheetName === 'team') {
-             document.getElementById('team_id_team').readOnly = (crudType === 'UPDATE');
-        } else if (sheetName === 'klub') {
-             document.getElementById('klub_id_klub').readOnly = (crudType === 'UPDATE');
-        } else if (sheetName === 'berita') {
-             document.getElementById('berita_tanggal').readOnly = (crudType === 'UPDATE');
+        // [PENINGKATAN 4] Kunci ID Team/Klub saat UPDATE (kunci primary key)
+        const primaryKeyInput = form.querySelector(`[name="${KEY_COLUMNS[sheetName]}"]`);
+        if (primaryKeyInput) {
+             primaryKeyInput.readOnly = (crudType === 'UPDATE');
         }
 
 
@@ -503,12 +501,13 @@
 
         if (crudType === 'UPDATE' && dataRow) {
             form.reset();
-            // [PERBAIKAN 5] Mengisi form dengan format tanggal yang benar
+            // [PERBAIKAN 5] Mengisi form dengan format tanggal yang benar (YYYY-MM-DD)
             for (const key in dataRow) {
                 const inputElement = form.querySelector(`[name="${key}"]`);
                 if (inputElement) {
                     let value = dataRow[key];
-                    if (inputElement.type === 'date') {
+                    if (inputElement.type === 'date' && value) {
+                         // Konversi dari Spreadsheet Date Object/String ke format YYYY-MM-DD untuk input type=date
                          const dateValue = new Date(value);
                          if (!isNaN(dateValue.getTime())) {
                              value = dateValue.toISOString().substring(0, 10);
